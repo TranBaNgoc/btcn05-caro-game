@@ -449,6 +449,30 @@ class Game extends React.Component {
   }
 }
 
+const mapStateToProps = state => {
+  return {
+    GameState: state.Game
+  };
+};
 
+const mapDispatchToProps = dispatch => {
+  return {
+    onAddStep: (history, stepNumber, xIsNext) => {
+      dispatch(action.AddStep(history, stepNumber, xIsNext));
+    },
+    onResetGame: () => {
+      dispatch(action.ResetGame());
+    },
+    onSortHistory: () => {
+      dispatch(action.Sort());
+    },
+    onJumpToStep: (stepNumber) => {
+      dispatch(action.JumpToStep(stepNumber));
+    }
+  };
+};
 
-export default Game;
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(Game);
