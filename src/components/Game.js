@@ -1,6 +1,8 @@
 import React from 'react';
+import { connect } from 'react-redux';
 import '../App.css';
 import Board from './Board';
+import * as action from '../actions/Game';
 
 const MaxHeight = 20;
 const MaxWidth = 20;
@@ -9,21 +11,6 @@ let backupvalue = -1;
 let colorsArray = Array(400).fill('#dbbc8c');
 
 class Game extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      history: [
-        {
-          squares: Array(400).fill(null),
-          position: -1
-        }
-      ],
-      xIsNext: true,
-      stepNumber: 0,
-      isIncrease: true,
-    };
-  }
-
   isBlock2Ends = (squares, type, competitor) => {
     const row = Math.floor(value / 20);
     const column = value % 20;
@@ -123,22 +110,16 @@ class Game extends React.Component {
   };
 
   jumpTo = step => {
-
-    const { history } = this.state;
+    const { GameState, onJumpToStep } = this.props;
+    const { history } = GameState;
 
     if (step !== history.length - 1) {
       value = -1;
       colorsArray = Array(400).fill('#dbbc8c');
-      this.setState({
-        stepNumber: step,
-        xIsNext: step % 2 === 0,
-      });
+      onJumpToStep(step);
     } else {
       value = backupvalue;
-      this.setState({
-        stepNumber: step,
-        xIsNext: step % 2 === 0
-      });
+      onJumpToStep(step);
     }
 
     for (let i = 0; i < history.length; i += 1) {
@@ -302,38 +283,25 @@ class Game extends React.Component {
 
   handleClickReset() {
     colorsArray = Array(400).fill('#dbbc8c');
-
-    const { history } = this.state;
-
+    const { onResetGame, GameState } = this.props;
+    const { history } = GameState;
     for (let i = 0; i < history.length; i += 1) {
       document.getElementById(i).style.fontWeight = 'normal';
     }
 
     value = -1;
 
-    this.setState({
-      xIsNext: true,
-      history: [
-        {
-          squares: Array(400).fill(null),
-          position: -1
-        }
-      ],
-      stepNumber: 0,
-    });
+    onResetGame();
   }
 
   handleClickSort() {
-    const { isIncrease } = this.state;
-
-    this.setState({
-      isIncrease: !isIncrease
-    });
+    const { onSortHistory } = this.props;
+    onSortHistory();
   }
 
   handleClick(i) {
-
-    const { history, stepNumber, xIsNext } = this.state;
+    const { GameState } = this.props;
+    const { history, stepNumber, xIsNext } = GameState;
 
     const histories = history.slice(0, stepNumber + 1);
     const current = histories[histories.length - 1];
@@ -351,25 +319,22 @@ class Game extends React.Component {
     backupvalue = value;
     squares[i] = xIsNext ? 'X' : 'O';
 
-    this.setState({
-      history: histories.concat([
+    const { onAddStep } = this.props;
+    onAddStep(
+      histories.concat([
         {
           squares,
           position: value
         }
       ]),
-      stepNumber: histories.length,
-      xIsNext: !xIsNext,
-    });
+      histories.length,
+      !xIsNext
+    );
   }
 
   render() {
-    const {
-      history,
-      stepNumber,
-      isIncrease,
-      xIsNext
-    } = this.state;
+    const { GameState } = this.props;
+    const { history, stepNumber, isIncrease, xIsNext } = GameState;
     const current = history[stepNumber];
     const winner = this.calculateWinner(current.squares);
     const Style = {
@@ -443,7 +408,11 @@ class Game extends React.Component {
         <header className="App-header">
           <div className="game">
             <div className="status">
-              <button type="button" onClick={() => this.handleClickReset()} style={{border: 'none', background: 'transparent'}}>
+              <button
+                type="button"
+                onClick={() => this.handleClickReset()}
+                style={{ border: 'none', background: 'transparent' }}
+              >
                 <img src="https://i.imgur.com/n2W67wf.png" alt="Chơi lại" />
               </button>
             </div>
@@ -457,7 +426,11 @@ class Game extends React.Component {
 
             <div style={{ marginLeft: '15px' }} className="game-info">
               <div>{status}</div>
-              <button type="button" onClick={() => this.handleClickSort()} style={{border: 'none', background: 'transparent'}}>
+              <button
+                type="button"
+                onClick={() => this.handleClickSort()}
+                style={{ border: 'none', background: 'transparent' }}
+              >
                 <img
                   src={sourceImgSort}
                   alt="Sắp xếp danh sách"
@@ -475,5 +448,7 @@ class Game extends React.Component {
     );
   }
 }
+
+
 
 export default Game;
