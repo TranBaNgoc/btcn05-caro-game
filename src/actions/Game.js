@@ -1,7 +1,7 @@
 import * as types from '../constants/ActionTypes'
 
 export const AddStep = (history, stepNumber, xIsNext) => ({
-    type: types.ADD_STEP,
+    type: 'ADD_STEP',
     history,
     stepNumber,
     xIsNext
